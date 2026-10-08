@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Location Demo</title>
+<style>
+  :root {
+    --bg: #ffffff; --text: #1a1a1a; --sub: #666; --card: #f5f5f5;
+    --accent: #2563eb; --accent-text: #ffffff; --border: #e0e0e0;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121212; --text: #f0f0f0; --sub: #aaa; --card: #1e1e1e;
+      --accent: #4f8cff; --accent-text: #0b0b0b; --border: #333;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121212; --text: #f0f0f0; --sub: #aaa; --card: #1e1e1e;
+    --accent: #4f8cff; --accent-text: #0b0b0b; --border: #333;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, system-ui, sans-serif;
+    display: flex; justify-content: center;
+  }
+  .wrap { max-width: 420px; width: 100%; padding: 2rem 1.25rem; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 0.5rem; }
+  p.sub { color: var(--sub); font-size: 14px; line-height: 1.5; margin: 0 0 1.5rem; }
+  button {
+    width: 100%; padding: 14px; font-size: 16px; font-weight: 600;
+    background: var(--accent); color: var(--accent-text);
+    border: none; border-radius: 10px; cursor: pointer;
+  }
+  button:active { opacity: 0.85; }
+  .card {
+    margin-top: 1.5rem; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem; font-size: 14px; line-height: 1.6;
+    word-break: break-word;
+  }
+  .row { display: flex; justify-content: space-between; padding: 4px 0; }
+  .label { color: var(--sub); }
+  .note { font-size: 12px; color: var(--sub); margin-top: 1rem; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Location demo</h1>
+  <p class="sub">Yeh ek education purpose demo hai. Button dabane par aapka browser khud ek permission popup dikhayega — tabhi location milegi, chupke se kabhi nahi.</p>
+  <button id="btn">Location share karein</button>
+  <div class="card" id="result" style="display:none;"></div>
+  <div class="card" id="error" style="display:none; color:#c00;"></div>
+  <p class="note">Koi bhi website sirf tabhi location le sakti hai jab browser khud popup dikhaye aur user "Allow" kare. Mobile number se direct location nikalna technically possible nahi hai.</p>
+  <p class="note"><a href="https://www.openstreetmap.org" target="_blank" rel="noopener">Coordinates verify karne ke liye OpenStreetMap par dekhein</a></p>
+</div>
+<script>
+document.getElementById('btn').addEventListener('click', function() {
+  var resultEl = document.getElementById('result');
+  var errorEl = document.getElementById('error');
+  resultEl.style.display = 'none';
+  errorEl.style.display = 'none';
+
+  if (!navigator.geolocation) {
+    errorEl.textContent = 'Yeh browser geolocation support nahi karta.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude.toFixed(5);
+    var lng = pos.coords.longitude.toFixed(5);
+    var acc = Math.round(pos.coords.accuracy);
+    resultEl.innerHTML =
+      '<div class="row"><span class="label">Latitude</span><span>' + lat + '</span></div>' +
+      '<div class="row"><span class="label">Longitude</span><span>' + lng + '</span></div>' +
+      '<div class="row"><span class="label">Accuracy</span><span>~' + acc + ' m</span></div>' +
+      '<div class="row"><span class="label">Map</span><span><a href="https://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '#map=15/' + lat + '/' + lng + '" target="_blank" rel="noopener">OpenStreetMap par dekhein</a></span></div>';
+    resultEl.style.display = 'block';
+  }, function(err) {
+    var msg = 'Location nahi mili.';
+    if (err.code === 1) msg = 'Permission deny ki gayi — isiliye location nahi mili. Yeh hi transparency hai: koi bhi user "Allow" na karein to data nahi jaata.';
+    if (err.code === 2) msg = 'Location abhi available nahi hai.';
+    if (err.code === 3) msg = 'Request timeout ho gayi, dobara try karein.';
+    errorEl.textContent = msg;
+    errorEl.style.display = 'block';
+  }, { enableHighAccuracy: true, timeout: 10000 });
+});
+</script>
+</body>
+</html>
